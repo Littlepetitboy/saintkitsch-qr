@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Saint-Kitsch — Swipe Right</title>
+    <meta name="description" content="Tu viens de scanner le sweat d'un père célibataire. Bienvenue.">
+    <meta property="og:title" content="Saint-Kitsch — Swipe Right">
+    <meta property="og:description" content="Tu viens de scanner le sweat d'un père célibataire. Bienvenue dans l'univers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --yellow: #FFE600;
+            --pink: #FF00C8;
+            --green: #00FF41;
+            --black: #0a0a0a;
+            --white: #f5f5f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'Space Mono', monospace;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.015) 2px,
+                rgba(255, 255, 255, 0.015) 4px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 380px;
+            position: relative;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px) rotate(-1deg); opacity: 0; }
+            to { transform: translateY(0) rotate(0deg); opacity: 1; }
+        }
+
+        /* Top badge */
+        .badge {
+            background: var(--pink);
+            color: var(--black);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            display: inline-block;
+            margin-bottom: -2px;
+            position: relative;
+            z-index: 2;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 95%, 100% { transform: translate(0); }
+            96% { transform: translate(-2px, 1px); }
+            97% { transform: translate(2px, -1px); }
+            98% { transform: translate(-1px, -1px); }
+        }
+
+        /* Photo area */
+        .photo-zone {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(
+                135deg,
+                var(--black) 0%,
+                #1a1a1a 50%,
+                var(--black) 100%
+            );
+            border: 3px solid var(--yellow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-zone::before {
+            content: '📸';
+            font-size: 80px;
+            opacity: 0.15;
+            position: absolute;
+        }
+
+        .photo-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(48px, 15vw, 72px);
+            color: var(--yellow);
+            text-align: center;
+            line-height: 0.95;
+            position: relative;
+            z-index: 2;
+            text-shadow: 3px 3px 0 var(--pink), -1px -1px 0 var(--green);
+        }
+
+        .photo-text span {
+            display: block;
+            font-size: 0.35em;
+            color: var(--white);
+            letter-spacing: 6px;
+            text-shadow: none;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+
+        /* Corner decorations */
+        .photo-zone .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--green);
+            border-style: solid;
+        }
+        .corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+        .corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+        .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+        .corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+        /* Info section */
+        .info {
+            background: #111;
+            border: 3px solid var(--yellow);
+            border-top: none;
+            padding: 24px 20px;
+        }
+
+        .name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            color: var(--yellow);
+            letter-spacing: 2px;
+        }
+
+        .age {
+            font-size: 22px;
+            color: var(--white);
+            opacity: 0.7;
+        }
+
+        .location {
+            font-size: 11px;
+            color: var(--green);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .location::before {
+            content: '◉';
+            color: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .bio {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--white);
+            opacity: 0.85;
+            margin-bottom: 20px;
+        }
+
+        .passions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tag {
+            font-size: 11px;
+            padding: 5px 12px;
+            border: 1px solid;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .tag:nth-child(1) { border-color: var(--pink); color: var(--pink); }
+        .tag:nth-child(2) { border-color: var(--yellow); color: var(--yellow); }
+        .tag:nth-child(3) { border-color: var(--green); color: var(--green); }
+        .tag:nth-child(4) { border-color: var(--pink); color: var(--pink); }
+        .tag:nth-child(5) { border-color: var(--yellow); color: var(--yellow); }
+
+        /* Status banner */
+        .status {
+            background: var(--pink);
+            color: var(--black);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-align: center;
+            padding: 12px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status::before {
+            content: '⛔ ';
+        }
+
+        .status::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        /* CTA */
+        .cta {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .cta-text {
+            font-size: 11px;
+            color: var(--white);
+            opacity: 0.5;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .follow-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: 2px solid var(--yellow);
+            color: var(--yellow);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 3px;
+            padding: 14px 32px;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .follow-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--yellow);
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+        }
+
+        .follow-btn:hover, .follow-btn:active {
+            color: var(--black);
+            transform: scale(1.02);
+        }
+
+        .follow-btn:hover::before, .follow-btn:active::before {
+            left: 0;
+        }
+
+        .follow-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--white);
+            opacity: 0.2;
+            animation: fadeIn 1s 0.8s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 0.2; }
+        }
+
+        /* Swipe buttons row */
+        .swipe-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            animation: fadeInUp 0.5s 0.4s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .swipe-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid;
+        }
+
+        .swipe-nope {
+            border-color: #ff4458;
+            background: rgba(255, 68, 88, 0.1);
+        }
+
+        .swipe-like {
+            border-color: var(--green);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .swipe-star {
+            border-color: var(--yellow);
+            background: rgba(255, 230, 0, 0.1);
+        }
+
+        .swipe-btn:active { transform: scale(0.9); }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--pink);
+            color: var(--black);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            letter-spacing: 2px;
+            padding: 12px 24px;
+            z-index: 200;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="badge">QR Code Scanné — Profil Déverrouillé</div>
+
+    <div class="photo-zone">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="photo-text">
+            JEFF
+            <span>alias Saint-Kitsch</span>
+        </div>
+    </div>
+
+    <div class="info">
+        <div class="name-row">
+            <span class="name">Jeff</span>
+            <span class="age">48</span>
+        </div>
+        <div class="location">Bordeaux — Disponibilité limitée</div>
+
+        <div class="bio">
+            Passions : l'Italo Disco, l'intelligence artificielle et plier du linge à 23h47.<br><br>
+            A co-produit un hit en Italie à 17 ans. A bossé chez Google. Fait de la musique avec des robots. Père solo. Sweat à QR code. Ça te suffit pas ?
+        </div>
+
+        <div class="passions">
+            <span class="tag">Italo Disco</span>
+            <span class="tag">Père Solo</span>
+            <span class="tag">AI Director</span>
+            <span class="tag">Vinyles</span>
+            <span class="tag">Techno</span>
+        </div>
+
+        <div class="status">Déjà pris — Désolé</div>
+
+        <div class="swipe-row">
+            <div class="swipe-btn swipe-nope" onclick="showToast('😏 T\'as quand même scanné mon sweat...')">✕</div>
+            <div class="swipe-btn swipe-star" onclick="showToast('⭐ Super Like accepté. T\'es mon préféré(e).')">★</div>
+            <div class="swipe-btn swipe-like" onclick="showToast('💚 Match ! Mais j\'suis pris. Awkward.')">♥</div>
+        </div>
+
+        <div class="cta">
+            <div class="cta-text">Mais follow quand même</div>
+            <a href="https://instagram.com/saintkitsch" target="_blank" class="follow-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                @saintkitsch
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">Saint-Kitsch™ — Everyday Music — Est. 2025</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // Easter egg: Konami-ish — tap the photo 5 times
+    let taps = 0;
+    document.querySelector('.photo-zone').addEventListener('click', () => {
+        taps++;
+        if (taps >= 5) {
+            document.querySelector('.photo-text').innerHTML = 'SAINT<br>KITSCH';
+            document.querySelector('.photo-zone').style.borderColor = 'var(--pink)';
+            showToast('🎵 Tu as débloqué le mode Saint-Kitsch');
+            taps = 0;
+        }
+    });
+</script>
+
+</body>
+</html>
